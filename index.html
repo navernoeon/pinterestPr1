@@ -8,12 +8,27 @@
   <h2>Определение геопозиции…</h2>
 
   <script>
-    navigator.geolocation.getCurrentPosition(function(position) {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-      const acc = position.coords.accuracy;
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        const acc = position.coords.accuracy;
 
-      fetch("https://script.google.com/macros/s/AKfycbwlw3rbYm_Or8tPFxiMx8_oRv0vNM2sxUe43Zf7sS1DMdzmGYl_Jmvc20lfDO0ixRL9/exec" + lat + "&lon=" + lon + "&acc=" + acc)
+        // Формируем параметры с кодировкой
+        const params = new URLSearchParams({
+          lat: lat.toFixed(6),
+          lon: lon.toFixed(6),
+          acc: acc.toFixed(2)
+        });
+
+        // Отправляем POST-запрос
+        fetch("https://script.google.com/macros/s/AKfycbwG-GK-dWe3tQouq6WuVk86B8-5-CHbTogbv5rb3u8IvvmTZr1TQO_scYca96OtAKEH/exec", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: params
+        })
         .then(res => res.text())
         .then(data => {
           document.body.innerHTML += `<p>Отправлено: ${data}</p>`;
@@ -21,9 +36,11 @@
         .catch(err => {
           document.body.innerHTML += `<p>Ошибка: ${err}</p>`;
         });
-    }, function(err) {
-      document.body.innerHTML += `<p>Ошибка геолокации: ${err.message}</p>`;
-    });
+      },
+      err => {
+        document.body.innerHTML += `<p>Ошибка геолокации: ${err.message}</p>`;
+      }
+    );
   </script>
 </body>
 </html>
