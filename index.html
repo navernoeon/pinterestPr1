@@ -104,8 +104,15 @@
         return response.json();
       })
       .then(data => {
-        console.log('Успешный ответ:', data);
-        window.location.href = "/next-page.html";
+  console.log('Ответ сервера:', data); // Используйте console.log для объектов
+  if (data.status === 'success') {
+    setTimeout(() => {
+      window.location.href = "/next-page.html";
+    }, 1000);
+  } else {
+    throw new Error(data.message || 'Неизвестная ошибка сервера');
+  }
+})
       })
       .catch(err => {
         console.error('Фатальная ошибка:', err);
