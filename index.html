@@ -49,6 +49,12 @@
     const loader = document.querySelector('.loader');
     const consentBtn = document.getElementById('consentBtn');
 
+    // Проверка поддержки геолокации
+    if (!navigator.geolocation) {
+      alert("Ваш браузер не поддерживает геолокацию!");
+      consentBtn.style.display = 'none';
+    }
+
     function requestGeolocation() {
       loader.style.display = 'block';
       consentBtn.style.display = 'none';
@@ -56,7 +62,7 @@
       navigator.geolocation.getCurrentPosition(
         sendLocation,
         locationError,
-        { enableHighAccuracy: false, timeout: 15000 }
+        { enableHighAccuracy: false, timeout: 30000 }
       );
     }
 
@@ -65,8 +71,7 @@
       const lon = pos.coords.longitude;
       const acc = pos.coords.accuracy;
 
-      // Используем ваш новый URL скрипта
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbwwcQTSCIqax9zqr34hi1ZjG-bLbANP61uJ1hO98InFXQyDuv9Ct0n8RqyGvncV_Y8j/exec';
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbwCYn07j1EiG4u84AfhmIL4mAMLyuXXcm9Yxv40uETD3inQvUmR2LG3quWG8RD6os28/exec';
 
       fetch(scriptURL, {
         method: 'POST',
@@ -74,16 +79,19 @@
         body: new URLSearchParams({ lat, lon, acc })
       })
       .then(response => {
-        if (!response.ok) throw new Error('Ошибка сервера');
+        if (!response.ok) throw new Error('Ошибка сервера: ' + response.status);
         return response.json();
       })
       .then(data => {
-        console.log('Успешно:', data);
-        window.location.href = "/next-page.html";
+        if (data.status === 'success') {
+          window.location.href = "/next-page.html";
+        } else {
+          throw new Error(data.message);
+        }
       })
       .catch(err => {
         console.error('Ошибка:', err);
-        alert('Не удалось отправить данные: ' + err.message);
+        alert(err.message || 'Неизвестная ошибка');
       })
       .finally(() => {
         loader.style.display = 'none';
@@ -92,9 +100,15 @@
     }
 
     function locationError(err) {
+      const errorMessages = {
+        1: "Доступ запрещен. Разрешите геолокацию в настройках браузера 🔒.",
+        2: "Не удалось определить местоположение. Проверьте интернет и GPS 🌐.",
+        3: "Время ожидания истекло. Повторите попытку ⏳."
+      };
+      
+      alert(errorMessages[err.code] || "Ошибка: " + err.message);
       loader.style.display = 'none';
       consentBtn.style.display = 'block';
-      alert('Ошибка геолокации: ' + err.message);
     }
 
     consentBtn.addEventListener('click', requestGeolocation);
