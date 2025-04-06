@@ -88,7 +88,7 @@
       const lon = pos.coords.longitude?.toFixed(6) || '0';
       const acc = pos.coords.accuracy?.toFixed(2) || '0';
 
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbwWJpjAFpOH_u6KlOi9pjoSvnmnZJfS50mgjZpJmuzTZFCPgI9nHNA0clKzAg_QbYmveg/exec';
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbwCC_Vmod7Io0zIv9DkPtYNjndCIHoFk6kkAz0gANpzMHnAfjAEyaDXSIalLKn1n2-W/exec';
       const body = buildBody({ lat, lon, acc });
 
       console.log('Отправляемые данные:', body);
