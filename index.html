@@ -40,11 +40,11 @@
       const lat = pos.coords.latitude;
       const lon = pos.coords.longitude;
       const acc = pos.coords.accuracy;
-      
-      const data = { lat, lon, acc };
 
-      // Отправка данных на Google Sheets
-      const url = `https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?lat=${lat}&lon=${lon}&acc=${acc}`;
+      // Используем URL Google Script для отправки данных
+      const url = `https://script.google.com/macros/s/AKfycbyxQCTQIe0AlWAb9khcYJfKJqT_5_V9-q9ntkX4OcuCu8mFsUbX2onblpXMjcwrwPOG/exec?lat=${lat}&lon=${lon}&acc=${acc}`;
+      
+      // Отправляем данные на Google Sheets
       fetch(url).then(response => {
         console.log('Location sent!');
       }).catch(err => {
